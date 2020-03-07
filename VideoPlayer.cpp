@@ -10,7 +10,7 @@ Player* Player::create(const std::string& path)
 		ret->autorelease();
 		return ret;
 	}
-	CC_SAFE_DELETE(ret);
+	delete ret;
 	return nullptr;
 }
 
@@ -69,7 +69,6 @@ void Player::vplay()
 		isPlaying = true;
 	}
 	autoUpdate = true;
-	//INFO("start play");
 }
 
 void Player::vstop()
@@ -131,7 +130,6 @@ void Player::update(float dt)
 	cocos2d::Sprite::update(dt);
 	if (dt >= 0)
 	{
-		// note: it assumes that framerate of the video is lower than the game
 		playerSeekTime(currentTime);
 		currentTime += dt;
 	}
@@ -140,8 +138,6 @@ void Player::update(float dt)
 		currentTime += 1.0 / decoder->getVideoFrameRate();
 	}
 	auto ret = decoder->read(&vbuf);
-	//if(!vbuf)
-	//	VINFO("read null from decoder");
 	texureDirty = ret != 0 && vbuf;
 	if (decoder->tell() == decoder->getTotalFrames() - 1/* || !vbuf*/) {
 		vstop();
@@ -152,7 +148,6 @@ void Player::update(float dt)
 		{
 			removeFromParentAndCleanup(true);
 		}
-		//INFO("SpriteVideo: stopped");
 	}
 }
 

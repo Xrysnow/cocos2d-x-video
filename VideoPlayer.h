@@ -8,7 +8,7 @@ namespace video
 	class Player : public cocos2d::Sprite
 	{
 	public:
-		enum PlayMode
+		enum class PlayMode
 		{
 			STEP,	   // step a const time per frame
 			REALTIME,  // realtime time -> video time, not recommand
@@ -30,7 +30,7 @@ namespace video
 
 		// see PlayMode
 		void setPlayMode(PlayMode m);
-		// used for STEP mode
+		// used for PlayMode::STEP mode
 		void setStep(double v) { step = v; }
 		// auto invoke removeFromParentAndCleanup when finished
 		void setAutoRemove(bool b) { autoRemove = b; }
@@ -51,7 +51,7 @@ namespace video
 		bool autoRemove = false;
 		bool isPlaying = false;
 		bool texureDirty = false;
-		PlayMode mode = STEP;
+		PlayMode mode = PlayMode::STEP;
 
 		std::function<void()> videoEndCallback;
 
