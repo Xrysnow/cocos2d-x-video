@@ -59,12 +59,12 @@ bool Player::init_(const std::string& path)
 
 void Player::vplay()
 {
-	if (mode == MANUAL)
+	if (mode == PlayMode::MANUAL)
 		return;
 	seek(0);
 	if (!isPlaying)
 	{
-		if (mode == REALTIME)
+		if (mode == PlayMode::REALTIME)
 			scheduleUpdate();
 		isPlaying = true;
 	}
@@ -73,11 +73,11 @@ void Player::vplay()
 
 void Player::vstop()
 {
-	if (mode == MANUAL)
+	if (mode == PlayMode::MANUAL)
 		return;
 	if (isPlaying)
 	{
-		if (mode == REALTIME)
+		if (mode == PlayMode::REALTIME)
 			unscheduleUpdate();
 		isPlaying = false;
 		seek(0);
@@ -87,11 +87,11 @@ void Player::vstop()
 
 void Player::vpause()
 {
-	if (mode == MANUAL)
+	if (mode == PlayMode::MANUAL)
 		return;
 	if (isPlaying&&autoUpdate)
 	{
-		if (mode == REALTIME)
+		if (mode == PlayMode::REALTIME)
 			unscheduleUpdate();
 		isPlaying = false;
 	}
@@ -99,11 +99,11 @@ void Player::vpause()
 
 void Player::vresume()
 {
-	if (mode == MANUAL)
+	if (mode == PlayMode::MANUAL)
 		return;
 	if (!isPlaying&&autoUpdate)
 	{
-		if (mode == REALTIME)
+		if (mode == PlayMode::REALTIME)
 			scheduleUpdate();
 		isPlaying = true;
 	}
@@ -153,7 +153,7 @@ void Player::update(float dt)
 
 void Player::setPlayMode(PlayMode m)
 {
-	if (m != REALTIME)
+	if (m != PlayMode::REALTIME)
 	{
 		unscheduleUpdate();
 	}
@@ -166,11 +166,11 @@ void Player::draw(cocos2d::Renderer* renderer, const cocos2d::Mat4 &transform, u
 		return;
 	if (isPlaying)
 	{
-		if (mode == STEP)
+		if (mode == PlayMode::STEP)
 		{
 			update(step);
 		}
-		else if (mode == FRAME)
+		else if (mode == PlayMode::FRAME)
 		{
 			update(-1);
 		}
