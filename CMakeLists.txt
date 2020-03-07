@@ -56,6 +56,7 @@ endif()
 add_library(${LIB_NAME} STATIC ${SOURCE} ${HEADER})
 add_dependencies(${LIB_NAME} cocos2d)
 use_cocos2dx_compile_define(${LIB_NAME})
+use_cocos2dx_compile_options(${LIB_NAME})
 
 if(CC_VIDEO_DEPEND_LIBS)
     target_link_libraries(${LIB_NAME} ${CC_VIDEO_DEPEND_LIBS})
@@ -69,6 +70,7 @@ set_target_properties(${LIB_NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 if(XCODE OR VS)
