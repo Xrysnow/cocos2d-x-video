@@ -1,5 +1,6 @@
 #pragma once
 #include "VideoCommon.h"
+#include <memory>
 
 namespace ffmpeg
 {
