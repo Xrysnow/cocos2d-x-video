@@ -41,7 +41,6 @@ set(SOURCE
 
 if(BUILD_LUA_LIBS)
     include_directories(
-        lua-bindings
         ${COCOS2DX_ROOT_PATH}/external/lua/luajit/include
         ${COCOS2DX_ROOT_PATH}/external/lua/tolua
     )
