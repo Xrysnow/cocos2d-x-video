@@ -288,7 +288,7 @@ double Decoder::getVideoFrameRate()
 	return Director::getInstance()->getAnimationInterval();
 }
 
-Decoder::Decoder()
+Decoder::Decoder() : timeBaseV(), timeBaseA(), videoInfo()
 {
 }
 
