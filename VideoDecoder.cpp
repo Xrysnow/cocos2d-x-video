@@ -62,7 +62,7 @@ bool Decoder::open(const std::string& path)
 		// get the codec context for the video stream
 		pCodecCtx = demuxer->getDecoder(idxVideo)->getCodecContext();
 		pCodecV = demuxer->getDecoder(idxVideo)->getCodec();
-		
+
 		ok = true;
 	}
 	while (false);
@@ -85,9 +85,9 @@ bool Decoder::open(const std::string& path)
 	return true;
 }
 
-bool Decoder::open(VideoStream* stream, double loopA, double loopB)
+bool Decoder::open(VideoStream* stream_, double loopA, double loopB)
 {
-	if (opened || !stream)
+	if (opened || !stream_)
 		return false;
 	//TODO:
 	return true;
@@ -280,7 +280,7 @@ int64_t Decoder::getTotalFrames() const
 	return nFramesV;
 }
 
-double Decoder::getVideoFrameRate()
+double Decoder::getVideoFrameRateForPlayer()
 {
 	if (!videoInfo.videoStreams.empty())
 	{

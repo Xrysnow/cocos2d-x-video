@@ -121,7 +121,7 @@ void Player::seek(uint32_t frame)
 {
 	if (decoder->seek(frame))
 	{
-		currentTime = frame / decoder->getVideoFrameRate();
+		currentTime = frame / decoder->getVideoFrameRateForPlayer();
 	}
 }
 
@@ -135,7 +135,7 @@ void Player::update(float dt)
 	}
 	else
 	{
-		currentTime += 1.0 / decoder->getVideoFrameRate();
+		currentTime += 1.0 / decoder->getVideoFrameRateForPlayer();
 	}
 	auto ret = decoder->read(&vbuf);
 	texureDirty = ret != 0 && vbuf;

@@ -15,7 +15,7 @@ namespace video
 		static Decoder* create(const std::string& path);
 
 		bool open(const std::string& path);
-		bool open(VideoStream* stream, double loopA = 0, double loopB = -1);
+		bool open(VideoStream* stream_, double loopA = 0, double loopB = -1);
 
 		bool setup();
 		bool setup(const cocos2d::Size& target_size);
@@ -30,9 +30,12 @@ namespace video
 		bool seek(int64_t frameOffset);
 
 		int64_t tell() const;
-		int64_t getTotalFrames() const;
-		double getVideoFrameRate();
 
+	protected:
+		int64_t getTotalFrames() const;
+		double getVideoFrameRateForPlayer();
+
+	public:
 		// raw size of the video
 		cocos2d::Size getRawSize() const { return cocos2d::Size(rawWidth, rawHeight); }
 		// size after convert
