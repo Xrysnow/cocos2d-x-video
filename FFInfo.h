@@ -8,7 +8,7 @@ namespace ffmpeg
 	{
 		int index;
 		int id;
-		int numFrames;
+		int64_t numFrames;
 		AVRational frameRate;
 		AVRational timeBase;
 		const AVCodec* codec;
@@ -25,7 +25,7 @@ namespace ffmpeg
 	{
 		int index;
 		int id;
-		int numFrames;
+		int64_t numFrames;
 		AVRational timeBase;
 		const AVCodec* codec;
 		// bits per second
