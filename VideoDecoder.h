@@ -36,11 +36,55 @@ namespace video
 		double getVideoFrameRateForPlayer();
 
 	public:
-		// raw size of the video
-		cocos2d::Size getRawSize() const { return cocos2d::Size(rawWidth, rawHeight); }
-		// size after convert
-		cocos2d::Size getTargetSize() const { return targetSize; }
 		ffmpeg::ContainerInfo getInfo() const { return videoInfo; }
+		/** video size after convert */
+		cocos2d::Size getVideoTargetSize() const { return targetSize; }
+
+		// video stream info
+
+		int64_t getVideoFrameCount(int index = -1) const;
+		AVRational getVideoFrameRate(int index = -1) const;
+		AVRational getVideoTimeBase(int index = -1) const;
+		int64_t getVideoBitRate(int index = -1) const;
+		AVPixelFormat getVideoFormat(int index = -1) const;
+		std::string getVideoFormatName(int index = -1) const;
+		cocos2d::Size getVideoSize(int index = -1) const;
+
+		// audio stream info
+
+		int64_t getAudioFrameCount(int index = -1) const;
+		AVRational getAudioTimeBase(int index = -1) const;
+		int64_t getAudioBitRate(int index = -1) const;
+		int getAudioSampleRate(int index = -1) const;
+		int getAudioChannelCount(int index = -1) const;
+		std::string getAudioChannelLayoutName(int index = -1) const;
+
+		// container info
+
+		double getContainerDuration() const;
+		double getContainerStartTime() const;
+		int64_t getContainerBitRate() const;
+		size_t getVideoStreamCount() const;
+		size_t getAudioStreamCount() const;
+
+		// decoder info
+
+		std::string getVideoDecoderName() const;
+		AVPixelFormat getVideoDecoderHardwareFormat() const;
+		AVPixelFormat getVideoDecoderSoftwareFormat() const;
+		bool isVideoDecoderHardware() const;
+
+		std::string getAudioDecoderName() const;
+
+		// utils
+
+		static std::string getPixelFormatName(AVPixelFormat format);
+		static std::vector<std::string> getAllDecoderNames();
+		static std::string queryDecoderLongName(const std::string& name);
+		static std::string queryDecoderType(const std::string& name);
+		static std::string queryDecoderID(const std::string& name);
+		static bool queryDecoderSupportsHardware(const std::string& name);
+
 	protected:
 		// only used for frame control when playing
 		bool playerSeekTime(double sec);
@@ -65,6 +109,8 @@ namespace video
 		AVCodec*         pCodecV = nullptr;
 		int idxVideo = -1;
 		int idxAudio = -1;
+		int idxVideoAtInfo = 0;
+		int idxAudioAtInfo = 0;
 
 		SwsContext* img_convert_ctx = nullptr;
 		uint8_t* sws_pointers[4] = { nullptr };

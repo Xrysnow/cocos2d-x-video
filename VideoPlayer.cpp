@@ -35,7 +35,7 @@ bool Player::init_(const std::string& path)
 	decoder->retain();
 	if (!decoder->setup())
 		return false;
-	const auto size = decoder->getTargetSize();
+	const auto size = decoder->getVideoTargetSize();
 	const int length = size.width * size.height;
 	auto texture = new cocos2d::Texture2D();
 	if (!texture)

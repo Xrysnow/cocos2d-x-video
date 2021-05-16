@@ -81,6 +81,16 @@ bool Decoder::open(const std::string& path)
 	durationV = pFormatCtx->streams[idxVideo]->duration * av_q2d(timeBaseV);
 
 	videoInfo = demuxer->getInfo();
+	for (int i = 0; i < videoInfo.videoStreams.size(); ++i)
+	{
+		if (videoInfo.videoStreams.at(i).index == idxVideo)
+			idxVideoAtInfo = i;
+	}
+	for (int i = 0; i < videoInfo.audioStreams.size(); ++i)
+	{
+		if (videoInfo.audioStreams.at(i).index == idxAudio)
+			idxAudioAtInfo = i;
+	}
 	opened = true;
 	return true;
 }
@@ -283,9 +293,7 @@ int64_t Decoder::getTotalFrames() const
 double Decoder::getVideoFrameRateForPlayer()
 {
 	if (!videoInfo.videoStreams.empty())
-	{
-		return av_q2d(videoInfo.videoStreams.at(0).frameRate);
-	}
+		return av_q2d(getVideoFrameRate());
 	return Director::getInstance()->getAnimationInterval();
 }
 
@@ -296,4 +304,221 @@ Decoder::Decoder() : timeBaseV(), timeBaseA(), videoInfo()
 Decoder::~Decoder()
 {
 	close();
+}
+
+int64_t Decoder::getVideoFrameCount(int index) const
+{
+	if (index < 0) index = idxVideoAtInfo;
+	if (index >= videoInfo.videoStreams.size())
+		return 0;
+	return videoInfo.videoStreams.at(index).numFrames;
+}
+
+AVRational Decoder::getVideoFrameRate(int index) const
+{
+	if (index < 0) index = idxVideoAtInfo;
+	if (index >= videoInfo.videoStreams.size())
+		return av_make_q(0, 0);
+	return videoInfo.videoStreams.at(index).frameRate;
+}
+
+AVRational Decoder::getVideoTimeBase(int index) const
+{
+	if (index < 0) index = idxVideoAtInfo;
+	if (index >= videoInfo.videoStreams.size())
+		return av_make_q(0, 0);
+	return videoInfo.videoStreams.at(index).timeBase;
+}
+
+int64_t Decoder::getVideoBitRate(int index) const {
+	if (index < 0) index = idxVideoAtInfo;
+	if(index >= videoInfo.videoStreams.size())
+		return 0;
+	return videoInfo.videoStreams.at(index).bitRate;
+}
+
+AVPixelFormat Decoder::getVideoFormat(int index) const
+{
+	if (index < 0) index = idxVideoAtInfo;
+	if (index >= videoInfo.videoStreams.size())
+		return AV_PIX_FMT_NONE;
+	return videoInfo.videoStreams.at(index).format;
+}
+
+std::string Decoder::getVideoFormatName(int index) const
+{
+	if (index < 0) index = idxVideoAtInfo;
+	if (index >= videoInfo.videoStreams.size())
+		return "";
+	const auto ret = videoInfo.videoStreams.at(index).formatName;
+	return ret ? ret : "";
+}
+
+Size Decoder::getVideoSize(int index) const
+{
+	if (index < 0) index = idxVideoAtInfo;
+	if (index >= videoInfo.videoStreams.size())
+		return { 0,0 };
+	auto& v = videoInfo.videoStreams.at(index);
+	return { (float)v.width,(float)v.height };
+}
+
+int64_t Decoder::getAudioFrameCount(int index) const
+{
+	if (index < 0) index = idxAudioAtInfo;
+	if (index >= videoInfo.audioStreams.size())
+		return 0;
+	return videoInfo.audioStreams.at(index).numFrames;
+}
+
+AVRational Decoder::getAudioTimeBase(int index) const
+{
+	if (index < 0) index = idxAudioAtInfo;
+	if (index >= videoInfo.audioStreams.size())
+		return av_make_q(0, 0);
+	return videoInfo.audioStreams.at(index).timeBase;
+}
+
+int64_t Decoder::getAudioBitRate(int index) const
+{
+	if (index < 0) index = idxAudioAtInfo;
+	if (index >= videoInfo.audioStreams.size())
+		return 0;
+	return videoInfo.audioStreams.at(index).bitRate;
+}
+
+int Decoder::getAudioSampleRate(int index) const
+{
+	if (index < 0) index = idxAudioAtInfo;
+	if (index >= videoInfo.audioStreams.size())
+		return 0;
+	return videoInfo.audioStreams.at(index).sampleRate;
+}
+
+int Decoder::getAudioChannelCount(int index) const
+{
+	if (index < 0) index = idxAudioAtInfo;
+	if (index >= videoInfo.audioStreams.size())
+		return 0;
+	return videoInfo.audioStreams.at(index).channels;
+}
+
+std::string Decoder::getAudioChannelLayoutName(int index) const
+{
+	if (index < 0) index = idxAudioAtInfo;
+	if (index >= videoInfo.audioStreams.size())
+		return "";
+	auto& info = videoInfo.audioStreams.at(index);
+	const auto ret = info.channelLayoutName;
+	if (ret[sizeof(info.channelLayoutName) - 1] != 0) {
+		return { ret, sizeof(info.channelLayoutName) };
+	}
+	return ret;
+}
+
+double Decoder::getContainerDuration() const
+{
+	return videoInfo.duration;
+}
+
+double Decoder::getContainerStartTime() const
+{
+	return videoInfo.start;
+}
+
+int64_t Decoder::getContainerBitRate() const
+{
+	return videoInfo.bitRate;
+}
+
+size_t Decoder::getVideoStreamCount() const
+{
+	return videoInfo.videoStreams.size();
+}
+
+size_t Decoder::getAudioStreamCount() const
+{
+	return videoInfo.audioStreams.size();
+}
+
+std::string Decoder::getVideoDecoderName() const
+{
+	const auto ret = demuxer->getDecoder(idxVideo)->getCodec()->name;
+	return ret ? ret : "";
+}
+
+AVPixelFormat Decoder::getVideoDecoderHardwareFormat() const
+{
+	const auto decoder = dynamic_cast<ffmpeg::VideoDecoder*>(demuxer->getDecoder(idxVideo));
+	return decoder ? decoder->getHardwareFormat() : AV_PIX_FMT_NONE;
+}
+
+AVPixelFormat Decoder::getVideoDecoderSoftwareFormat() const
+{
+	const auto decoder = dynamic_cast<ffmpeg::VideoDecoder*>(demuxer->getDecoder(idxVideo));
+	return decoder ? decoder->getSoftwareFormat() : AV_PIX_FMT_NONE;
+}
+
+bool Decoder::isVideoDecoderHardware() const
+{
+	const auto decoder = dynamic_cast<ffmpeg::VideoDecoder*>(demuxer->getDecoder(idxVideo));
+	return decoder ? decoder->isHardware() : false;
+}
+
+std::string Decoder::getAudioDecoderName() const
+{
+	const auto decoder = demuxer->getDecoder(idxAudio);
+	if (!decoder)
+		return "";
+	const auto ret = decoder->getCodec()->name;
+	return ret ? ret : "";
+}
+
+std::string Decoder::getPixelFormatName(AVPixelFormat format)
+{
+	const auto desc = av_pix_fmt_desc_get(format);
+	if (!desc)
+		return "";
+	return desc->name;
+}
+
+std::vector<std::string> Decoder::getAllDecoderNames()
+{
+	std::vector<std::string> ret;
+	for (auto&& c : ffmpeg::Codec::getAllDecoders())
+		ret.emplace_back(c->name);
+	return ret;
+}
+
+std::string Decoder::queryDecoderLongName(const std::string& name)
+{
+	const auto codec = avcodec_find_decoder_by_name(name.c_str());
+	if (!codec)
+		return "";
+	return codec->long_name ? codec->long_name : "";
+}
+
+std::string Decoder::queryDecoderType(const std::string& name)
+{
+	const auto codec = avcodec_find_decoder_by_name(name.c_str());
+	if (!codec)
+		return "";
+	const auto ret = av_get_media_type_string(codec->type);
+	return ret ? ret : "";
+}
+
+std::string Decoder::queryDecoderID(const std::string& name)
+{
+	const auto codec = avcodec_find_decoder_by_name(name.c_str());
+	if (!codec)
+		return "";
+	return avcodec_get_name(codec->id);
+}
+
+bool Decoder::queryDecoderSupportsHardware(const std::string& name)
+{
+	const auto codec = avcodec_find_decoder_by_name(name.c_str());
+	if (!codec)
+		return false;
+	return avcodec_get_hw_config(codec, 0);
 }
