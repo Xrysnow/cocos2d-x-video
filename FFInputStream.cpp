@@ -387,6 +387,7 @@ void AudioInputStream::addToContainerInfo(ContainerInfo* containerInfo)
 	info.sampleRate = codecContext->sample_rate;
 	info.channels = codecContext->channels;
 	info.channelLayout = codecContext->channel_layout;
+	std::memset(info.channelLayoutName, 0, sizeof(info.channelLayoutName));
 	av_get_channel_layout_string(info.channelLayoutName, 255, codecContext->channels, codecContext->channel_layout);
 	containerInfo->audioStreams.push_back(info);
 }
