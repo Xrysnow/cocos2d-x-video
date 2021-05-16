@@ -29,8 +29,8 @@ namespace video
 		 */
 		bool seek(int64_t frameOffset);
 
-		uint32_t tell() const;
-		uint32_t getTotalFrames() const;
+		int64_t tell() const;
+		int64_t getTotalFrames() const;
 		double getVideoFrameRate();
 
 		// raw size of the video

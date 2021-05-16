@@ -269,12 +269,12 @@ bool Decoder::playerSeekTime(double sec)
 	return true;
 }
 
-uint32_t Decoder::tell() const
+int64_t Decoder::tell() const
 {
 	return currentFrame;
 }
 
-uint32_t Decoder::getTotalFrames() const
+int64_t Decoder::getTotalFrames() const
 {
 	return nFramesV;
 }
