@@ -76,7 +76,8 @@ bool Decoder::open(const std::string& path)
 	rawWidth = pCodecCtx->width;
 	rawHeight = pCodecCtx->height;
 	timeBaseV = pFormatCtx->streams[idxVideo]->time_base;
-	timeBaseA = pFormatCtx->streams[idxAudio]->time_base;
+	if (idxAudio >= 0)
+		timeBaseA = pFormatCtx->streams[idxAudio]->time_base;
 	durationV = pFormatCtx->streams[idxVideo]->duration * av_q2d(timeBaseV);
 
 	videoInfo = demuxer->getInfo();
