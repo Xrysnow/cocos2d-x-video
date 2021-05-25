@@ -65,6 +65,12 @@ if(BUILD_LUA_LIBS)
     target_compile_definitions(${LIB_NAME} PUBLIC _USRLUASTATIC)
 endif()
 
+if(FFMPEG_LIBRARY)
+    #target_link_libraries(${LIB_NAME} ${FFMPEG_LIBRARY})
+    #set_target_properties(${LIB_NAME} PROPERTIES XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS ${FFMPEG_FRAMEWORK_PATH})
+    target_include_directories(${LIB_NAME} PUBLIC FFMPEG_INCLUDE_DIR)
+endif()
+
 set_target_properties(${LIB_NAME}
     PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
