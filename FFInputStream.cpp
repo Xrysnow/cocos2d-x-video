@@ -1,5 +1,6 @@
 ﻿#include "FFInputStream.h"
 #include "FFInfo.h"
+#include <cstring>
 
 using namespace std;
 using namespace ffmpeg;
