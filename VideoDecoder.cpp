@@ -117,8 +117,8 @@ bool Decoder::setup(const Size& target_size)
 		return false;
 	}
 	targetSize = Size(width, height);
-	// TODO: sws to YUV420 and convert in shader
-	const auto fmt = AV_PIX_FMT_RGB24;
+	// TODO: avoid sws
+	const auto fmt = AV_PIX_FMT_RGBA;
 	auto ret = av_image_alloc(sws_pointers, sws_linesizes,
 		width, height, fmt, 1);
 	if (ret < 0)

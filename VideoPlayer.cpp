@@ -1,4 +1,5 @@
 ﻿#include "VideoPlayer.h"
+#include "renderer/backend/Device.h"
 
 using namespace video;
 
@@ -36,24 +37,21 @@ bool Player::init_(const std::string& path)
 	if (!decoder->setup())
 		return false;
 	const auto size = decoder->getVideoTargetSize();
-	const int length = size.width * size.height;
-	auto texture = new cocos2d::Texture2D();
+	auto texture = new (std::nothrow) cocos2d::Texture2D();
 	if (!texture)
 		return false;
-	auto buf = new uint8_t[length * 3];
-	const auto pixFormat = cocos2d::backend::PixelFormat::RGB888;
-	if (!texture->initWithData(buf, length,
-		pixFormat, size.width, size.height, size))
-	{
-		delete[] buf;
-		return false;
-	}
-	delete[] buf;
+	cocos2d::backend::TextureDescriptor desc;
+	desc.width = size.width;
+	desc.height = size.height;
+	desc.textureUsage = cocos2d::TextureUsage::WRITE;
+	desc.textureFormat = cocos2d::backend::PixelFormat::RGBA8888;
+	auto tex = cocos2d::backend::Device::getInstance()->newTexture(desc);
+	tex->autorelease();
+	texture->initWithBackendTexture(tex);
 	initWithTexture(texture);
 	setContentSize(size);
 	_running = true;
 	update(0);
-
 	return true;
 }
 
