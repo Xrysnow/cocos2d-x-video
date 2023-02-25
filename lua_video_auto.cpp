@@ -705,7 +705,7 @@ int lua_register_cc_video_Decoder(lua_State* tolua_S)
 		tolua_function(tolua_S, "queryDecoderSupportsHardware", lua_cc_video_Decoder_queryDecoderSupportsHardware);
 		tolua_function(tolua_S, "queryDecoderType", lua_cc_video_Decoder_queryDecoderType);
 	tolua_endmodule(tolua_S);
-	std::string typeName = typeid(video::Decoder).name();
+	const auto typeName = reinterpret_cast<decltype(g_luaType)::key_type>(typeid(video::Decoder).name());
 	g_luaType[typeName] = "video.Decoder";
 	g_typeCast["Decoder"] = "video.Decoder";
 	return 1;
@@ -976,7 +976,7 @@ int lua_register_cc_video_Player(lua_State* tolua_S)
 			tolua_endmodule(tolua_S);
 		}
 	tolua_endmodule(tolua_S);
-	std::string typeName = typeid(video::Player).name();
+	const auto typeName = reinterpret_cast<decltype(g_luaType)::key_type>(typeid(video::Player).name());
 	g_luaType[typeName] = "video.Player";
 	g_typeCast["Player"] = "video.Player";
 	return 1;
