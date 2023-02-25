@@ -45,9 +45,13 @@ bool Player::init_(const std::string& path)
 	desc.height = size.height;
 	desc.textureUsage = cocos2d::TextureUsage::WRITE;
 	desc.textureFormat = cocos2d::backend::PixelFormat::RGBA8888;
+#ifdef CC_VERSION
+	texture->updateTextureDescriptor(desc);
+#else
 	auto tex = cocos2d::backend::Device::getInstance()->newTexture(desc);
 	tex->autorelease();
 	texture->initWithBackendTexture(tex);
+#endif // CC_VERSION
 	initWithTexture(texture);
 	setContentSize(size);
 	_running = true;
@@ -137,14 +141,20 @@ void Player::update(float dt)
 	}
 	auto ret = decoder->read(&vbuf);
 	texureDirty = ret != 0 && vbuf;
-	if (decoder->tell() == decoder->getTotalFrames() - 1/* || !vbuf*/) {
+	if (decoder->tell() == decoder->getTotalFrames() - 1/* || !vbuf*/)
+	{
 		vstop();
-		if (videoEndCallback) {
+		if (videoEndCallback)
 			videoEndCallback();
-		}
 		if (autoRemove)
 		{
-			removeFromParentAndCleanup(true);
+			// stop texture update
+			vbuf = nullptr;
+			// avoid memory conflict
+			scheduleOnce([this](float dt_)
+			{
+				removeFromParentAndCleanup(true);
+			}, 0, "remove");
 		}
 	}
 }
@@ -174,7 +184,32 @@ void Player::draw(cocos2d::Renderer* renderer, const cocos2d::Mat4 &transform, u
 		}
 		if (texureDirty && vbuf)
 		{
-			_texture->updateWithData(vbuf, 0, 0, _texture->getPixelsWide(), _texture->getPixelsHigh());
+#ifdef CC_VERSION
+			const int length = _contentSize.width * _contentSize.height;
+			size_t dataSize = 0;
+			cocos2d::PixelFormat format;
+			if (decoder->getReadFormat() == AV_PIX_FMT_RGBA)
+			{
+				dataSize = length * 4;
+				format = cocos2d::PixelFormat::RGBA8;
+			}
+			else
+			{
+				dataSize = length * 3;
+				format = cocos2d::PixelFormat::RGB8;
+			}
+			_texture->updateWithData(
+				vbuf, dataSize,
+				format,
+				cocos2d::PixelFormat::RGBA8888,
+				_texture->getPixelsWide(),
+				_texture->getPixelsHigh(),
+				false);
+#else
+			_texture->updateWithData(vbuf, 0, 0,
+				_texture->getPixelsWide(),
+				_texture->getPixelsHigh());
+#endif // CC_VERSION
 		}
 	}
 
@@ -191,19 +226,28 @@ void Player::saveCurrentFrame(const std::string& path)
 	if (!vbuf)
 		return;
 	auto im = new cocos2d::Image();
-	auto dat = vbuf;
 	const int length = _contentSize.width * _contentSize.height;
-	auto buf = new uint8_t[length * 4];
-	for (int i = 0; i < length; ++i)
+	const size_t dataSize = length * 4;
+	std::vector<uint8_t> buffer;
+	uint8_t* buf;
+	if (decoder->getReadFormat() == AV_PIX_FMT_RGBA)
 	{
-		buf[i * 4] = dat[i * 3];
-		buf[i * 4 + 1] = dat[i * 3 + 1];
-		buf[i * 4 + 2] = dat[i * 3 + 2];
-		buf[i * 4 + 3] = 255;
+		buf = vbuf;
 	}
-	im->initWithRawData(buf, length * 4,
+	else
+	{
+		buffer.resize(dataSize);
+		buf = buffer.data();
+		for (int i = 0; i < length; ++i)
+		{
+			buf[i * 4] = vbuf[i * 3];
+			buf[i * 4 + 1] = vbuf[i * 3 + 1];
+			buf[i * 4 + 2] = vbuf[i * 3 + 2];
+			buf[i * 4 + 3] = 255;
+		}
+	}
+	im->initWithRawData(buf, dataSize,
 		_contentSize.width, _contentSize.height, 32);
 	im->saveToFile(path);
 	delete im;
-	delete[] buf;
 }

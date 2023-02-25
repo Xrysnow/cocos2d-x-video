@@ -12,7 +12,7 @@ namespace video
 		{
 			/** step a const time per frame */
 			STEP,
-			/** realtime time -> video time, not recommand */
+			/** realtime time -> video time, not recommended */
 			REALTIME,
 			/** game frame -> video frame */
 			FRAME,
@@ -27,7 +27,7 @@ namespace video
 		void vstop();
 		void vpause();
 		void vresume();
-		/** can only seek key frame, not recommand to set a non-0 value */
+		/** can only seek key frame, not recommended to set a non-0 value */
 		void seek(uint32_t frame);
 		/** step dt in decoder and get data, will step 1 frame if dt<0 */
 		void update(float dt) override;
@@ -62,6 +62,6 @@ namespace video
 		std::function<void()> videoEndCallback;
 
 		Player();
-		virtual ~Player();
+		~Player() override;
 	};
 }
