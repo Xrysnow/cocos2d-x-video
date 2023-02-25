@@ -1,17 +1,26 @@
 set(LIB_NAME cc_video)
 
-include_directories(
+set(INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${COCOS2DX_ROOT_PATH}/cocos
     ${COCOS2DX_ROOT_PATH}/cocos/base
     ${COCOS2DX_ROOT_PATH}/cocos/platform
+    ${COCOS2DX_ROOT_PATH}/extensions
     ${COCOS2DX_ROOT_PATH}/external
     ${COCOS2DX_ROOT_PATH}/external/glfw3/include/win32
+    ${COCOS2DX_ROOT_PATH}/external/glfw/include/GLFW
+    ${COCOS2DX_ROOT_PATH}/external/win32-specific/gles/include/OGLES
 )
-
-if(WINDOWS)
-    include_directories(${COCOS2DX_ROOT_PATH}/external/win32-specific/gles/include/OGLES)
+if(BUILD_LUA_LIBS)
+    list(APPEND INCLUDES
+        ${COCOS2DX_ROOT_PATH}/external/lua/luajit/include
+        ${COCOS2DX_ROOT_PATH}/external/lua/tolua)
 endif()
+foreach(dir ${INCLUDES})
+    if(EXISTS ${dir})
+        include_directories(${dir})
+    endif()
+endforeach()
 
 set(HEADER
     FFCodec.h
@@ -40,10 +49,6 @@ set(SOURCE
 )
 
 if(BUILD_LUA_LIBS)
-    include_directories(
-        ${COCOS2DX_ROOT_PATH}/external/lua/luajit/include
-        ${COCOS2DX_ROOT_PATH}/external/lua/tolua
-    )
     list(APPEND HEADER
         lua_video_auto.hpp
     )
