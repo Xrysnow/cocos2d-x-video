@@ -23,6 +23,7 @@ namespace video
 		bool isOpened() const;
 		void close();
 		uint32_t read(uint8_t** vbuf);
+		AVPixelFormat getReadFormat();
 		/**
 		 * can only seek key frame, not recommand to set a non-0 value. 
 		 * will make next [read] give specified frame.
@@ -115,6 +116,7 @@ namespace video
 		SwsContext* img_convert_ctx = nullptr;
 		uint8_t* sws_pointers[4] = { nullptr };
 		int sws_linesizes[4] = { 0 };
+		AVPixelFormat swsFormat = AV_PIX_FMT_RGBA;
 
 		ffmpeg::frame_ptr vFrame;
 		int64_t lastFrame = -2;

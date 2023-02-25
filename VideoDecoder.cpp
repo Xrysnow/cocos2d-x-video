@@ -118,9 +118,8 @@ bool Decoder::setup(const Size& target_size)
 	}
 	targetSize = Size(width, height);
 	// TODO: avoid sws
-	const auto fmt = AV_PIX_FMT_RGBA;
 	auto ret = av_image_alloc(sws_pointers, sws_linesizes,
-		width, height, fmt, 1);
+		width, height, swsFormat, 1);
 	if (ret < 0)
 	{
 		VERRO("can't alloc image");
@@ -138,12 +137,12 @@ bool Decoder::setup(const Size& target_size)
 		srcFormat,
 		width,
 		height,
-		fmt,
+		swsFormat,
 		SWS_FAST_BILINEAR,
 		nullptr, nullptr, nullptr);
 	VINFO("sws: %s -> %s",
 		av_pix_fmt_desc_get(srcFormat)->name,
-		av_pix_fmt_desc_get(fmt)->name);
+		av_pix_fmt_desc_get(swsFormat)->name);
 	if (!img_convert_ctx)
 	{
 		VERRO("can't create sws context");
@@ -215,6 +214,11 @@ uint32_t Decoder::read(uint8_t** vbuf)
 	currentFrame++;
 	*vbuf = sws_pointers[0];
 	return 1;
+}
+
+AVPixelFormat Decoder::getReadFormat()
+{
+	return swsFormat;
 }
 
 bool Decoder::seek(int64_t frameOffset)
