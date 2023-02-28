@@ -21,11 +21,7 @@ Player::Player()
 
 Player::~Player()
 {
-	if (decoder)
-	{
-		decoder->close();
-		decoder->release();
-	}
+	CC_SAFE_RELEASE_NULL(decoder);
 }
 
 bool Player::init_(const std::string& path)
@@ -40,6 +36,7 @@ bool Player::init_(const std::string& path)
 	auto texture = new (std::nothrow) cocos2d::Texture2D();
 	if (!texture)
 		return false;
+	texture->autorelease();
 	cocos2d::backend::TextureDescriptor desc;
 	desc.width = size.width;
 	desc.height = size.height;
