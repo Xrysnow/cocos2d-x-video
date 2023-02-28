@@ -91,7 +91,7 @@ namespace video
 		bool playerSeekTime(double sec);
 
 		Decoder();
-		~Decoder();
+		~Decoder() override;
 		bool opened = false;
 		VideoStream* stream = nullptr;
 		ffmpeg::Demuxer* demuxer = nullptr;

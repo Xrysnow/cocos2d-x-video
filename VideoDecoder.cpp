@@ -110,6 +110,11 @@ bool Decoder::setup()
 
 bool Decoder::setup(const Size& target_size)
 {
+	if (img_convert_ctx)
+	{
+		// already setup
+		return false;
+	}
 	const int width = (int)target_size.width;
 	const int height = (int)target_size.height;
 	if (width <= 0 || height <= 0)
@@ -129,7 +134,7 @@ bool Decoder::setup(const Size& target_size)
 	auto srcFormat = pCodecCtx->pix_fmt;
 	if (dec->isHardware())
 		srcFormat = dec->getSoftwareFormat();
-	assert(srcFormat >= 0);
+	CC_ASSERT(srcFormat >= 0);
 	// scale/convert
 	img_convert_ctx = sws_getContext(
 		pCodecCtx->width,
@@ -140,9 +145,13 @@ bool Decoder::setup(const Size& target_size)
 		swsFormat,
 		SWS_FAST_BILINEAR,
 		nullptr, nullptr, nullptr);
-	VINFO("sws: %s -> %s",
+	VINFO("image conversion: %s(%dx%d) -> %s(%dx%d)",
 		av_pix_fmt_desc_get(srcFormat)->name,
-		av_pix_fmt_desc_get(swsFormat)->name);
+		pCodecCtx->width,
+		pCodecCtx->height,
+		av_pix_fmt_desc_get(swsFormat)->name,
+		width,
+		height);
 	if (!img_convert_ctx)
 	{
 		VERRO("can't create sws context");
@@ -169,11 +178,17 @@ void Decoder::close()
 	if (sws_pointers[0])
 	{
 		av_freep(&sws_pointers[0]);
+		memset(sws_pointers, 0, sizeof(void*) * 4);
 	}
 	if (stream)
 	{
 		stream->release();
 		stream = nullptr;
+	}
+	if (pFormatCtx)
+	{
+		avformat_free_context(pFormatCtx);
+		pFormatCtx = nullptr;
 	}
 	opened = false;
 }
@@ -204,7 +219,7 @@ uint32_t Decoder::read(uint8_t** vbuf)
 		return 0;
 
 	vFrame = videoQueue->pop();
-	assert(vFrame);
+	CC_ASSERT(vFrame);
 
 	sws_scale(img_convert_ctx,
 		vFrame->data, vFrame->linesize,
