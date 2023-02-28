@@ -65,6 +65,7 @@ namespace ffmpeg
 	public:
 		static VideoDecoder* createByName(const char* name);
 		static VideoDecoder* createById(AVCodecID id);
+		~VideoDecoder() override;
 		bool open() override;
 		bool openHardware(AVPixelFormat desiredSWFormat = AV_PIX_FMT_NONE);
 		AVPixelFormat getHardwareFormat() const;

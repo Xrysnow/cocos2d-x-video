@@ -238,6 +238,14 @@ VideoDecoder* VideoDecoder::createById(AVCodecID id)
 	return nullptr;
 }
 
+VideoDecoder::~VideoDecoder()
+{
+	if (hwDeviceCtx)
+	{
+		av_buffer_unref(&hwDeviceCtx);
+	}
+}
+
 bool VideoDecoder::open()
 {
 	if (Hardware::isSupported(codec))
