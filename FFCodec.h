@@ -19,7 +19,7 @@ namespace ffmpeg
 	protected:
 		Codec();
 		virtual ~Codec();
-		virtual bool init(AVCodec* codec);
+		virtual bool init(AVCodec* codec_);
 	public:
 
 		static Codec* create(AVCodec* codec);
@@ -52,7 +52,7 @@ namespace ffmpeg
 	class AudioDecoder : public Decoder
 	{
 	protected:
-		bool init(AVCodec* codec) override;
+		bool init(AVCodec* codec_) override;
 	public:
 		static AudioDecoder* createByName(const char* name);
 		static AudioDecoder* createById(AVCodecID id);
@@ -61,7 +61,7 @@ namespace ffmpeg
 	class VideoDecoder : public Decoder
 	{
 	protected:
-		bool init(AVCodec* codec) override;
+		bool init(AVCodec* codec_) override;
 	public:
 		static VideoDecoder* createByName(const char* name);
 		static VideoDecoder* createById(AVCodecID id);

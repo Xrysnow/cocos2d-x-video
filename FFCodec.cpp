@@ -1,5 +1,6 @@
 ﻿#include "FFCodec.h"
 #include "FFHardware.h"
+#include <unordered_set>
 
 using namespace std;
 using namespace ffmpeg;
@@ -80,17 +81,17 @@ Codec::~Codec()
 	clean();
 }
 
-bool Codec::init(AVCodec* codec)
+bool Codec::init(AVCodec* codec_)
 {
-	if (!codec)
+	if (!codec_)
 		return false;
-	codecContext = avcodec_alloc_context3(codec);
+	codecContext = avcodec_alloc_context3(codec_);
 	if (!codecContext)
 	{
-		VERRO("can't allocate video codec context for codec %s", codec->name);
+		VERRO("can't allocate video codec context for codec %s", codec_->name);
 		return false;
 	}
-	this->codec = codec;
+	codec = codec_;
 	// copy the type
 	//codecContext->codec_type = codec->type;
 	return true;
@@ -128,7 +129,7 @@ bool Codec::open()
 {
 	if (opened)
 		return true;
-	int ret = avcodec_open2(codecContext, codec, nullptr);
+	const auto ret = avcodec_open2(codecContext, codec, nullptr);
 	if (ret < 0)
 	{
 		VERRO("can't open codec: %d", ret);
@@ -180,9 +181,9 @@ void Codec::clean()
 	}
 }
 
-bool AudioDecoder::init(AVCodec* codec)
+bool AudioDecoder::init(AVCodec* codec_)
 {
-	return Codec::init(codec) && codec->type == AVMEDIA_TYPE_AUDIO;
+	return Codec::init(codec_) && codec_->type == AVMEDIA_TYPE_AUDIO;
 }
 
 AudioDecoder* AudioDecoder::createByName(const char* name)
@@ -209,9 +210,9 @@ AudioDecoder* AudioDecoder::createById(AVCodecID id)
 	return nullptr;
 }
 
-bool VideoDecoder::init(AVCodec* codec)
+bool VideoDecoder::init(AVCodec* codec_)
 {
-	return Codec::init(codec) && codec->type == AVMEDIA_TYPE_VIDEO;
+	return Codec::init(codec_) && codec_->type == AVMEDIA_TYPE_VIDEO;
 }
 
 VideoDecoder* VideoDecoder::createByName(const char* name)
@@ -257,36 +258,42 @@ bool VideoDecoder::openHardware(AVPixelFormat desiredSWFormat)
 {
 	if (opened)
 		return true;
-	auto configs = Hardware::getConfigs(codec);
+	const auto configs = Hardware::getConfigs(codec);
 	if(configs.empty())
 		return false;
-	for (auto& cfg : configs)
+#if 0
+	static std::unordered_set<std::string> CodecNames;
+	if (!CodecNames.count(codec->name))
 	{
+		std::string hw_str;
+		for (auto&& cfg : configs)
+		{
+			hw_str += "\n  fmt=";
+			const auto pname = av_pix_fmt_desc_get(cfg->pix_fmt)->name;
+			hw_str += pname ? pname : "null";
+			hw_str += ", device=";
+			const auto dname = av_hwdevice_get_type_name(cfg->device_type);
+			hw_str += dname ? dname : "null";
+		}
+		VINFO("possible hw_cfg for decoder %s:%s", codec->name, hw_str.c_str());
+		CodecNames.insert(codec->name);
+	}
+#endif
+	for (auto&& cfg : configs)
+	{
+		// devideCtx should be released by av_buffer_unref
 		auto devideCtx = Hardware::createDeviceContext(codecContext, cfg);
 		if(!devideCtx)
 			continue;
-		auto sw = Hardware::getSoftwareFormats(devideCtx);
-		if(sw.empty())
-			continue;
-		hwFormat = Hardware::getHardwareFormat(cfg);
-		std::string sw_str;
-		for (auto& f : sw)
-		{
-			sw_str += " ";
-			sw_str += av_pix_fmt_desc_get(f)->name;
-		}
-		//VINFO("sw fmt for hw fmt %s: %s", av_pix_fmt_desc_get(hwFormat)->name, sw_str.c_str());
-		for (auto& f : sw)
+		const auto sw = Hardware::getSoftwareFormats(devideCtx);
+		std::vector<AVPixelFormat> possibleSW;
+		for (auto&& f : sw)
 		{
 			if (sws_isSupportedInput(f))
-			{
-				swFormat = f;
-				break;
-			}
+				possibleSW.push_back(f);
 		}
-		if (desiredSWFormat == AV_PIX_FMT_NONE && swFormat == AV_PIX_FMT_NONE)
-			continue;
-		for (auto& f : sw)
+		swFormat = AV_PIX_FMT_NONE;
+		for (auto&& f : possibleSW)
 		{
 			if (f == desiredSWFormat)
 			{
@@ -294,21 +301,45 @@ bool VideoDecoder::openHardware(AVPixelFormat desiredSWFormat)
 				break;
 			}
 		}
+		if (swFormat == AV_PIX_FMT_NONE && !possibleSW.empty())
+		{
+			swFormat = possibleSW[0];
+		}
+		if(swFormat == AV_PIX_FMT_NONE)
+		{
+			av_buffer_unref(&devideCtx);
+			codecContext->hw_device_ctx = nullptr;
+			continue;
+		}
+		hwFormat = Hardware::getHardwareFormat(cfg);
 		hwDeviceType = cfg->device_type;
 		hwDeviceCtx = devideCtx;
+#if 0
+		std::string sw_str;
+		for (auto&& f : possibleSW)
+		{
+			const auto pname = av_pix_fmt_desc_get(f)->name;
+			sw_str += " ";
+			sw_str += pname ? pname : "null";
+		}
+		const auto pname = av_pix_fmt_desc_get(cfg->pix_fmt)->name;
+		VINFO("possible sw_fmt for hw_fmt %s:%s", pname ? pname : "null", sw_str.c_str());
+#endif
 		break;
 	}
 	if(!hwDeviceCtx)
 		return false;
-	int ret = avcodec_open2(codecContext, codec, nullptr);
+	const auto ret = avcodec_open2(codecContext, codec, nullptr);
 	if (ret < 0)
 	{
-		VERRO("can't open codecContext for codec: %d", ret);
+		VERRO("can't open codec context: %d", ret);
 		return false;
 	}
-	VINFO("hw fmt: %s, sw fmt: %s",
+	const auto dname = av_hwdevice_get_type_name(hwDeviceType);
+	VINFO("hw_fmt=%s, sw_fmt=%s, device=%s",
 		av_pix_fmt_desc_get(hwFormat)->name,
-		av_pix_fmt_desc_get(swFormat)->name);
+		av_pix_fmt_desc_get(swFormat)->name,
+		dname ? dname : "null");
 	opened = true;
 	return true;
 }
