@@ -14,14 +14,14 @@ AVFrame* ffmpeg::FrameQueue::alloc()
 		while (queue.size() > maxSize)
 			queue.pop_front();
 	}
-	assert(!queue.empty());
+	CC_ASSERT(!queue.empty());
 	return queue.back().get();
 }
 
 void ffmpeg::FrameQueue::receive(AVFrame* frame, MetaData* metaData)
 {
-	assert(!received);
-	assert(!frame || frame == queue.back().get());
+	CC_ASSERT(!received);
+	CC_ASSERT(!frame || frame == queue.back().get());
 	if(frame)
 		received = true;
 }

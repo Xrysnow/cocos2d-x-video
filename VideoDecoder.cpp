@@ -1,4 +1,5 @@
 ﻿#include "VideoDecoder.h"
+#include "platform/CCFileUtils.h"
 
 using namespace std;
 using namespace cocos2d;

@@ -1,9 +1,9 @@
 ﻿#pragma once
-#include "cocos2d.h"
 #include "VideoCommon.h"
 #include "VideoStream.h"
 #include "FFDemuxer.h"
 #include "FFFrameQueue.h"
+#include "math/Vec2.h"
 #include <cstdint>
 
 namespace video

@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "cocos2d.h"
 #include "VideoDecoder.h"
+#include "2d/CCSprite.h"
 #include <functional>
 
 namespace video
