@@ -34,6 +34,7 @@ namespace ffmpeg
 		int sampleRate;
 		int channels;
 
+		// Native channel mask; zero for layouts with another channel order.
 		uint64_t channelLayout;
 		char channelLayoutName[255];
 	};

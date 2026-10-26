@@ -7,4 +7,4 @@ It has many limits and only supports basic playback.
 ## Dependencies
 
 * [cocos2d-x](https://github.com/cocos2d/cocos2d-x) 4.0+
-* [ffmpeg](https://ffmpeg.org/) 4.0+
+* [ffmpeg](https://ffmpeg.org/) 9.0 (the bundled avbuild lite libraries)

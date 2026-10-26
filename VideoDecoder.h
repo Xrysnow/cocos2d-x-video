@@ -107,7 +107,7 @@ namespace video
 
 		AVFormatContext* pFormatCtx = nullptr;
 		AVCodecContext*  pCodecCtx = nullptr;
-		AVCodec*         pCodecV = nullptr;
+		const AVCodec*         pCodecV = nullptr;
 		int idxVideo = -1;
 		int idxAudio = -1;
 		int idxVideoAtInfo = 0;

@@ -48,11 +48,6 @@ bool InputStream::init(Decoder* decoder, AVFormatContext* format, AVStream* stre
 	if (!codecContext->codec)
 		codecContext->codec = codec;
 
-	// calculate the "correct" time_base
-	timeBaseCorrectedByTicksPerFrame.num = codecContext->time_base.num;
-	timeBaseCorrectedByTicksPerFrame.den = codecContext->time_base.den;
-	timeBaseCorrectedByTicksPerFrame.num *= codecContext->ticks_per_frame;
-
 	// temperary frame
 	frame = av_frame_alloc();
 	if (!frame)
@@ -173,7 +168,7 @@ int64_t InputStream::calculateBitRate(AVCodecContext* ctx)
 	case AVMEDIA_TYPE_AUDIO:
 		bits_per_sample = av_get_bits_per_sample(ctx->codec_id);
 		bit_rate = bits_per_sample ?
-			ctx->sample_rate * (int64_t)ctx->channels * bits_per_sample : ctx->bit_rate;
+			ctx->sample_rate * (int64_t)ctx->ch_layout.nb_channels * bits_per_sample : ctx->bit_rate;
 		break;
 	default:
 		bit_rate = 0;
@@ -386,18 +381,21 @@ void AudioInputStream::addToContainerInfo(ContainerInfo* containerInfo)
 
 	info.codec = avcodec_find_decoder(codecContext->codec_id);
 	info.sampleRate = codecContext->sample_rate;
-	info.channels = codecContext->channels;
-	info.channelLayout = codecContext->channel_layout;
-	std::memset(info.channelLayoutName, 0, sizeof(info.channelLayoutName));
-	av_get_channel_layout_string(info.channelLayoutName, 255, codecContext->channels, codecContext->channel_layout);
+	const auto& layout = codecContext->ch_layout;
+	info.channels = layout.nb_channels;
+	info.channelLayout = layout.order == AV_CHANNEL_ORDER_NATIVE ? layout.u.mask : 0;
+	av_channel_layout_describe(&layout, info.channelLayoutName, sizeof(info.channelLayoutName));
 	containerInfo->audioStreams.push_back(info);
 }
 
 void AudioInputStream::configureCodecContext()
 {
 	// guess channel layout for the decoder
-	if (!codecContext->channel_layout)
+	auto& layout = codecContext->ch_layout;
+	if (layout.order == AV_CHANNEL_ORDER_UNSPEC && layout.nb_channels > 0)
 	{
-		codecContext->channel_layout = av_get_default_channel_layout(codecContext->channels);
+		const auto channels = layout.nb_channels;
+		av_channel_layout_uninit(&layout);
+		av_channel_layout_default(&layout, channels);
 	}
 }

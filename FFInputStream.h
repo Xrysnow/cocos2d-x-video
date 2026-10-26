@@ -39,7 +39,6 @@ namespace ffmpeg
 		AVFormatContext* format = nullptr;
 		AVStream* stream = nullptr;
 
-		AVRational timeBaseCorrectedByTicksPerFrame;
 		FrameReceiver* receiver = nullptr;
 		Decoder* decoder = nullptr;
 		AVFrame* frame = nullptr;

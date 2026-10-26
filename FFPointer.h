@@ -8,7 +8,7 @@ namespace ffmpeg
 	inline packet_ptr newPacketPtr()
 	{
 		return packet_ptr{
-			new AVPacket, [](AVPacket* p) { av_packet_unref(p); delete p; } };
+			av_packet_alloc(), [](AVPacket* p) { av_packet_free(&p); } };
 	}
 
 	using frame_ptr = std::unique_ptr<AVFrame, std::function<void(AVFrame*)>>;

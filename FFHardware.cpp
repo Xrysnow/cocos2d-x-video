@@ -23,12 +23,12 @@ std::vector<AVHWDeviceType> Hardware::getDeviceTypes()
 	return ret;
 }
 
-bool Hardware::isSupported(AVCodec* codec)
+bool Hardware::isSupported(const AVCodec* codec)
 {
 	return codec && avcodec_get_hw_config(codec, 0);
 }
 
-bool Hardware::isSupported(AVCodec* codec, AVHWDeviceType type)
+bool Hardware::isSupported(const AVCodec* codec, AVHWDeviceType type)
 {
 	auto types = getSupportedDeviceTypes(codec);
 	for (auto& t : types)
@@ -39,7 +39,7 @@ bool Hardware::isSupported(AVCodec* codec, AVHWDeviceType type)
 	return false;
 }
 
-std::vector<AVHWDeviceType> Hardware::getSupportedDeviceTypes(AVCodec* codec)
+std::vector<AVHWDeviceType> Hardware::getSupportedDeviceTypes(const AVCodec* codec)
 {
 	std::vector<AVHWDeviceType> ret;
 	if (codec)
@@ -58,7 +58,7 @@ std::vector<AVHWDeviceType> Hardware::getSupportedDeviceTypes(AVCodec* codec)
 	return ret;
 }
 
-std::vector<const AVCodecHWConfig*> Hardware::getConfigs(AVCodec* codec)
+std::vector<const AVCodecHWConfig*> Hardware::getConfigs(const AVCodec* codec)
 {
 	std::vector<const AVCodecHWConfig*> ret;
 	if (codec)

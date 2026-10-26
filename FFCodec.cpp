@@ -81,7 +81,7 @@ Codec::~Codec()
 	clean();
 }
 
-bool Codec::init(AVCodec* codec_)
+bool Codec::init(const AVCodec* codec_)
 {
 	if (!codec_)
 		return false;
@@ -97,7 +97,7 @@ bool Codec::init(AVCodec* codec_)
 	return true;
 }
 
-Codec* Codec::create(AVCodec* codec)
+Codec* Codec::create(const AVCodec* codec)
 {
 	auto ret = new (nothrow) Codec();
 	if (ret&&ret->init(codec))
@@ -181,7 +181,7 @@ void Codec::clean()
 	}
 }
 
-bool AudioDecoder::init(AVCodec* codec_)
+bool AudioDecoder::init(const AVCodec* codec_)
 {
 	return Codec::init(codec_) && codec_->type == AVMEDIA_TYPE_AUDIO;
 }
@@ -210,7 +210,7 @@ AudioDecoder* AudioDecoder::createById(AVCodecID id)
 	return nullptr;
 }
 
-bool VideoDecoder::init(AVCodec* codec_)
+bool VideoDecoder::init(const AVCodec* codec_)
 {
 	return Codec::init(codec_) && codec_->type == AVMEDIA_TYPE_VIDEO;
 }

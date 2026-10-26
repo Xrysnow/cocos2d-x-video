@@ -19,14 +19,14 @@ namespace ffmpeg
 	protected:
 		Codec();
 		virtual ~Codec();
-		virtual bool init(AVCodec* codec_);
+		virtual bool init(const AVCodec* codec_);
 	public:
 
-		static Codec* create(AVCodec* codec);
+		static Codec* create(const AVCodec* codec);
 		static Codec* createByName(const char* name, bool isEncoder = false);
 		static Codec* createById(AVCodecID id, bool isEncoder = false);
 
-		AVCodec* getCodec() const { return codec; }
+		const AVCodec* getCodec() const { return codec; }
 		AVCodecContext* getCodecContext() const { return codecContext; }
 
 		virtual bool open();
@@ -44,7 +44,7 @@ namespace ffmpeg
 		void clean();
 		bool opened = false;
 		AVCodecContext* codecContext = nullptr;
-		AVCodec* codec = nullptr;
+		const AVCodec* codec = nullptr;
 	};
 
 	class Decoder : public Codec {};
@@ -52,7 +52,7 @@ namespace ffmpeg
 	class AudioDecoder : public Decoder
 	{
 	protected:
-		bool init(AVCodec* codec_) override;
+		bool init(const AVCodec* codec_) override;
 	public:
 		static AudioDecoder* createByName(const char* name);
 		static AudioDecoder* createById(AVCodecID id);
@@ -61,7 +61,7 @@ namespace ffmpeg
 	class VideoDecoder : public Decoder
 	{
 	protected:
-		bool init(AVCodec* codec_) override;
+		bool init(const AVCodec* codec_) override;
 	public:
 		static VideoDecoder* createByName(const char* name);
 		static VideoDecoder* createById(AVCodecID id);

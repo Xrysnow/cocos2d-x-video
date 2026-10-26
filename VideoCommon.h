@@ -22,6 +22,7 @@ extern "C"
 	#include "libswscale/swscale.h"
 	#include "libswresample/swresample.h"
 
+	#include "libavutil/channel_layout.h"
 	#include "libavutil/frame.h"
 	#include "libavutil/mem.h"
 	#include "libavutil/file.h"

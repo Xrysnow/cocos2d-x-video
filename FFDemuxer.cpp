@@ -105,8 +105,11 @@ bool Demuxer::step()
 {
 	auto pkt_ = newPacketPtr();
 	auto pkt = pkt_.get();
-	av_init_packet(pkt);
-	pkt->data = nullptr;
+	if (!pkt)
+	{
+		VERRO("failed to allocate packet");
+		return false;
+	}
 	// read frames from the file
 	int ret = av_read_frame(containerContext, pkt);
 	// EOF
