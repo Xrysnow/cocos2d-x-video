@@ -12,11 +12,6 @@ set(INCLUDES
     ${COCOS2DX_ROOT_PATH}/external/jni.hpp/include
     ${COCOS2DX_ROOT_PATH}/external/win32-specific/gles/include/OGLES
 )
-if(BUILD_LUA_LIBS)
-    list(APPEND INCLUDES
-        ${COCOS2DX_ROOT_PATH}/external/lua/luajit/include
-        ${COCOS2DX_ROOT_PATH}/external/lua/tolua)
-endif()
 foreach(dir ${INCLUDES})
     if(EXISTS ${dir})
         include_directories(${dir})
@@ -49,17 +44,6 @@ set(SOURCE
     VideoPlayer.cpp
 )
 
-if(BUILD_LUA_LIBS)
-    list(APPEND HEADER
-        lua_video_auto.hpp
-        lua_video_compat.hpp
-    )
-    list(APPEND SOURCE
-        lua_video_auto.cpp
-        lua_video_manual.cpp
-    )
-endif()
-
 add_library(${LIB_NAME} STATIC ${SOURCE} ${HEADER})
 target_include_directories(${LIB_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 add_dependencies(${LIB_NAME} cocos2d)
@@ -68,12 +52,6 @@ use_cocos2dx_compile_options(${LIB_NAME})
 
 if(CC_VIDEO_DEPEND_LIBS)
     target_link_libraries(${LIB_NAME} ${CC_VIDEO_DEPEND_LIBS})
-endif()
-
-if(BUILD_LUA_LIBS)
-    target_include_directories(${LIB_NAME} PRIVATE
-        ${COCOS2DX_ROOT_PATH}/extensions/scripting/lua-bindings/manual)
-    target_compile_definitions(${LIB_NAME} PUBLIC _USRLUASTATIC)
 endif()
 
 if(FFMPEG_LIBRARY)
