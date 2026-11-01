@@ -52,9 +52,11 @@ set(SOURCE
 if(BUILD_LUA_LIBS)
     list(APPEND HEADER
         lua_video_auto.hpp
+        lua_video_compat.hpp
     )
     list(APPEND SOURCE
         lua_video_auto.cpp
+        lua_video_manual.cpp
     )
 endif()
 
@@ -69,6 +71,8 @@ if(CC_VIDEO_DEPEND_LIBS)
 endif()
 
 if(BUILD_LUA_LIBS)
+    target_include_directories(${LIB_NAME} PRIVATE
+        ${COCOS2DX_ROOT_PATH}/extensions/scripting/lua-bindings/manual)
     target_compile_definitions(${LIB_NAME} PUBLIC _USRLUASTATIC)
 endif()
 
